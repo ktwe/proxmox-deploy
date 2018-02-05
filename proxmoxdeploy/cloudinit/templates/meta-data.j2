@@ -2,9 +2,9 @@ instance-id: vmid-{{ context.vmid }}
 hostname: {{ context.name }}
 
 {% if context.configure_network %}
+{% if context.ip_address -%}
 network-interfaces: |
   auto {{ context.network_device }}
-  {% if context.ip_address -%}
   iface {{ context.network_device }} inet static
     address {{ context.ip_address }}
     network {{ context.network_address }}
@@ -12,7 +12,17 @@ network-interfaces: |
     broadcast {{ context.broadcast_address }}
     gateway {{ context.gateway_address }}
     dns-nameservers {{ context.dns_servers }}
-  {% else -%}
-  iface {{ context.network_device }} inet dhcp
-  {% endif -%}
+{% else -%}
+network:
+  version: 2
+  ethernets:
+    eth0:
+      dhcp4: true
+      dhcp6: true
+    ens:
+      match:
+        name: ens*
+      dhcp4: true
+      dhcp6: true
+{% endif -%}
 {% endif %}
